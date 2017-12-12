@@ -4,5 +4,3 @@ __pycache__/*
 .DS_Store
 
 py3.py
-compare.py
-faceset.py

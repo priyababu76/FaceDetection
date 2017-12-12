@@ -1,6 +1,6 @@
-from detect import FaceDetect
-import detect
+from FacePlusPlus.detect import FaceDetect
 import time
+import os
 import cv2
 
 face_url = {
@@ -15,7 +15,10 @@ usr_config = {
 }
 
 #图片存储路径
-filepath = 'player.jpeg'
+filepath = '/Users/aemonwk/git-project/face++/datasets/player.jpeg'
+
+def get_path():
+    return os.path.expanduser('~/datasets')
 
 if __name__ == "__main__":
     
