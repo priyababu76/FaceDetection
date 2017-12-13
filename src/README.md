@@ -2,7 +2,7 @@
 
 主要的实现代码
 
-- `FacePlusPlus`
+- `FacePlusPlus/`
 
   主要的API实现程序
 
