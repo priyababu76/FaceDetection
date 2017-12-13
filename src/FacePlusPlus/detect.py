@@ -1,12 +1,7 @@
 import urllib
 import urllib.request
 
-def string2byte(strr):
-    return strr.encode()
-
-def encode_image(filepath):
-    with open(filepath, 'rb') as fr:
-        return fr.read()
+from src.utils import *
 
 class FaceDetect(object):
     
@@ -39,6 +34,7 @@ class FaceDetect(object):
         data.append(string2byte('Content-Type: %s\r\n' %
                                 'application/octet-stream'))
         data.append(encode_image(filepath))
+
         data.append(string2byte('--%s--\r\n' % self.boundary))
 
         return '\r\n'.encode().join(data)
@@ -53,7 +49,7 @@ class FaceDetect(object):
         data = self.http_body(filepath)
         try:
             resp = urllib.request.urlopen(req,data=data,timeout=5)
-            qrcont = resp.read()
+            qrcont = resp.read().decode()
             print (qrcont)
         except urllib.error.HTTPError as e:
             print (e.read())
