@@ -1,33 +1,32 @@
 from src.FacePlusPlus.compare import FaceCompare
-import time
 import os
 import cv2
-
-face_url = {
-    'detect': 'https://api-cn.faceplusplus.com/facepp/v3/detect',
-    'compare': 'https://api-cn.faceplusplus.com/facepp/v3/compare',
-}
-
-usr_config = {
-    'api_key': 'bLGUtVb2PPXbRXrxFGQ53lQAL4s9aiV0',
-    'api_secret': 'iKuT2RKxOTD3q790hBqwRV2PszW17zti',
-    'boundary': '----------%s' % hex(int(time.time() * 1000)),
-}
+from src.utils import *
 
 # 图片存储路径
-imagepath1 = '/Users/aemonwk/git-project/face++/datasets/curry1.jpeg'
-imagepath2 = '/Users/aemonwk/git-project/face++/datasets/curry2.jpeg'
+image_path1 = '/Users/aemonwk/git-project/face++/datasets/curry1.jpeg'
+image_path2 = '/Users/aemonwk/git-project/face++/datasets/curry2.jpeg'
 
 if __name__ == "__main__":
 
+    image_type = [
+        PARAM_TYPE['file'],
+        PARAM_TYPE['file'],
+    ]
+
+    image = [
+        image_path1,
+        image_path2
+    ]
+
     cmp = FaceCompare(
-        url = face_url['compare'],
-        key = usr_config['api_key'],
-        secret = usr_config['api_secret'],
-        boundary = usr_config['boundary']
+            FACE_URL['compare'],
+            USER_CONFIG['api_key'],
+            USER_CONFIG['api_secret'],
+            USER_CONFIG['boundary']
     )
 
-    qrcont = cmp.compare(imagepath1,imagepath2)
+    qrcont = cmp.compare(image_type,image)
 
     if qrcont == None:
         print ("HTTP error")

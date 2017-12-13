@@ -1,21 +1,11 @@
 from src.FacePlusPlus.detect import FaceDetect
-import time
 import os
 import cv2
+from src.utils import *
 
-face_url = {
-    'detect': 'https://api-cn.faceplusplus.com/facepp/v3/detect',
-    'compare': 'https://api-cn.faceplusplus.com/facepp/v3/compare',
-}
-
-usr_config = {
-    'api_key': 'bLGUtVb2PPXbRXrxFGQ53lQAL4s9aiV0',
-    'api_secret': 'iKuT2RKxOTD3q790hBqwRV2PszW17zti',
-    'boundary': '----------%s' % hex(int(time.time() * 1000)),
-}
 
 # 图片存储路径
-filepath = '/Users/aemonwk/git-project/face++/datasets/player.jpeg'
+image_path = '/Users/aemonwk/git-project/face++/datasets/player.jpeg'
 
 
 def get_path():
@@ -24,18 +14,26 @@ def get_path():
 
 if __name__ == "__main__":
 
-    img = cv2.imread(filepath)
+    img = cv2.imread(image_path)
     cv2.namedWindow("origin")
     cv2.imshow("origin", img)
 
+    image_type = [
+        PARAM_TYPE['file']
+    ]
+
+    image = [
+        image_path
+    ]
+
     detect = FaceDetect(
-            face_url['detect'],
-            usr_config['api_key'],
-            usr_config['api_secret'],
-            usr_config['boundary']
+            FACE_URL['detect'],
+            USER_CONFIG['api_key'],
+            USER_CONFIG['api_secret'],
+            USER_CONFIG['boundary']
     )
 
-    qrcont = detect.detect(filepath)
+    qrcont = detect.detect(image_type,image)
 
     if qrcont == None:
         print("error")

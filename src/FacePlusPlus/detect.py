@@ -11,9 +11,48 @@ class FaceDetect(object):
         self.api_secret = secret
         self.boundary = boundary
 
-    def http_body(self,filepath):
-        data = []
+    def http_append_image(self,image_type,image):
 
+        # todo
+
+        data = []
+        if image_type.find(PARAM_TYPE['url']) != -1:
+            param = image_type
+            data.append(string2byte('--%s' % self.boundary))
+            data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
+                                    param))
+            data.append(string2byte('Content-Type: %s\r\n' %
+                                    'application/octet-stream'))
+            data.append(image_encode(image_type, image))
+            return data
+
+        elif image_type.find(PARAM_TYPE['file']) != -1:
+            param = image_type
+            data.append(string2byte('--%s' % self.boundary))
+            data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
+                                    param))
+            data.append(string2byte('Content-Type: %s\r\n' %
+                                    'application/octet-stream'))
+            data.append(image_encode(image_type, image))
+            return data
+
+        elif image_type.find(PARAM_TYPE['base64']) != -1 :
+            param = image_type
+            data.append(string2byte('--%s' % self.boundary))
+            data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
+                                    param))
+            data.append(string2byte('Content-Type: %s\r\n' %
+                                    'application/octet-stream'))
+            data.append(image_encode(image_type, image))
+            return data
+
+        elif image_type.find(PARAM_TYPE['token']) != -1:
+            pass
+
+
+    def http_body(self,image_type,image):
+
+        data = []
         # add api_key
         data.append(string2byte('--%s' % self.boundary))
         data.append(string2byte(
@@ -27,26 +66,25 @@ class FaceDetect(object):
             'Content-Disposition: form-data; name="%s"\r\n' % 'api_secret'))
         data.append(string2byte(self.api_secret))
 
-        # add image bytes
-        data.append(string2byte('--%s' % self.boundary))
-        data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
-                                'image_file'))
-        data.append(string2byte('Content-Type: %s\r\n' %
-                                'application/octet-stream'))
-        data.append(encode_image(filepath))
+        # detect single image
+        data = data + self.http_append_image(image_type[0],image[0])
 
         data.append(string2byte('--%s--\r\n' % self.boundary))
 
-        return '\r\n'.encode().join(data)
+        return b'\r\n'.join(data)
 
 
-    def detect(self,filepath):
+    def detect(self,image_type,image):
         qrcont = None   
 
         req = urllib.request.Request(self.url)
         req.add_header(
             'Content-Type', 'multipart/form-data; boundary=%s' % self.boundary)
-        data = self.http_body(filepath)
+
+        # req.add_header(
+        #     'Content-Type', 'application/octet-stream; boundary=%s' % self.boundary)
+
+        data = self.http_body(image_type,image)
         try:
             resp = urllib.request.urlopen(req,data=data,timeout=5)
             qrcont = resp.read().decode()
