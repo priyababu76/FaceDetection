@@ -4,7 +4,7 @@
 
 - `FacePlusPlus/`
 
-  主要的API实现程序
+  主要的API实现代码
 
 
 - `utils.py`
