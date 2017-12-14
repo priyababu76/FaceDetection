@@ -1,80 +1,54 @@
-import urllib
-import urllib.request
-
+import requests
+import base64
 from src.utils import *
 
 class FaceCompare(object):
-
-    def __init__(self,url,key,secret,boundary):
+    def __init__(self, url, key, secret):
         self.url = url
-        self.api_key = key
-        self.api_secret = secret
-        self.boundary = boundary
+        self.key = key
+        self.secret = secret
 
+    def gen_data(self, image_type, image, index=0):
+        params = image_type
 
-    def http_append_image(self,image_type,image,index=None):
-        data = []
+        if index:
+            if image_type == PARAM_TYPE['base64']:
+                params = params + '_'
+            params = params + str(index)
+        return {params: image_encode(image_type, image)}
 
-        # todo
+    def gen_files(self, image_type, image, index=0):
+        params = image_type
 
-        if image_type.find(PARAM_TYPE['url']) != -1:
-            pass
-
-        elif image_type.find(PARAM_TYPE['file']) != -1:
-            param = image_type + str(index)
-            data.append(string2byte('--%s' % self.boundary))
-            data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
-                                    param))
-            data.append(string2byte('Content-Type: %s\r\n' %
-                                    'application/octet-stream'))
-            data.append(image_encode(image_type, image))
-            return data
-
-        elif image_type.find(PARAM_TYPE['base64']) != -1 :
-            param = type + '_' + str(index)
-            return data
-
-        elif image_type.find(PARAM_TYPE['token']) != -1:
-            pass
-
-
-
-    def http_body(self,image_type,image):
-        data = []
-        # add api_key
-        data.append(string2byte('--%s' % self.boundary))
-        data.append(string2byte(
-            'Content-Disposition: form-data; name="%s"\r\n' % 'api_key'))
-        data.append(string2byte(self.api_key))
-
-        # add api_secret
-        data.append(string2byte('--%s' % self.boundary))
-        data.append(string2byte(
-            'Content-Disposition: form-data; name="%s"\r\n' % 'api_secret'))
-        data.append(string2byte(self.api_secret))
-
-        size = len(image_type)
-        for index in range(size):
-            data = data + self.http_append_image(image_type[index],image[index],index+1)
-
-        data.append(string2byte('--%s--\r\n' % self.boundary))
-
-        return b'\r\n'.join(data)
-
+        if index:
+            params = params + str(index)
+        return {params: image_encode(image_type, image)}
 
     def compare(self,image_type,image):
-        qrcont = None
-        req = urllib.request.Request(self.url)
+        data = {
+            'api_key' : self.key ,
+            'api_secret' : self.secret,
+        }
+        files = {}
 
-        req.add_header(
-            'Content-Type', 'multipart/form-data; boundary=%s' % self.boundary)
+        size = len(image_type)
 
-        data = self.http_body(image_type,image)
+        for index in range(size):
+            if image_type[index] == PARAM_TYPE['token']:
+                pass
 
-        try:
-            resp = urllib.request.urlopen(req,data=data,timeout=5)
-            qrcont = resp.read().decode()
-            print (qrcont)
-        except urllib.error.HTTPError as e:
-            print (e.read().decode())
-        return qrcont
+            elif image_type[index] == PARAM_TYPE['url']:
+                pass
+
+            elif image_type[index] == PARAM_TYPE['file']:
+                files = {**files, **self.gen_files(image_type[index], image[index],index+1)}
+
+            elif image_type[index] == PARAM_TYPE['base64']:
+                data = {**data, **self.gen_data(image_type[index], image[index],index+1)}
+
+        try :
+            req = requests.post(self.url, data=data, files=files)
+            return req
+        except requests.HTTPError as e:
+            print (e)
+            return None

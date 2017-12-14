@@ -20,10 +20,6 @@ PARAM_TYPE = {
     'token' : 'face_token',
 }
 
-def string2byte(strr):
-    return strr.encode()
-
-
 def image_encode(image_type,image):
 
     # todo

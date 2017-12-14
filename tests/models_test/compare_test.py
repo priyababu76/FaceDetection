@@ -10,8 +10,8 @@ image_path2 = '/Users/aemonwk/git-project/face++/datasets/curry2.jpeg'
 if __name__ == "__main__":
 
     image_type = [
-        PARAM_TYPE['file'],
-        PARAM_TYPE['file'],
+        PARAM_TYPE['base64'],
+        PARAM_TYPE['base64'],
     ]
 
     image = [
@@ -23,13 +23,14 @@ if __name__ == "__main__":
             FACE_URL['compare'],
             USER_CONFIG['api_key'],
             USER_CONFIG['api_secret'],
-            USER_CONFIG['boundary']
     )
 
-    qrcont = cmp.compare(image_type,image)
+    resp = cmp.compare(image_type,image)
 
-    if qrcont == None:
-        print ("HTTP error")
+    if resp == None:
+        print("HTTP error")
     else:
+        qrcont = resp.text
+        print (qrcont)
         mydict = eval(qrcont)
         print ("image1跟image2中人脸的置信度为:",mydict['confidence'])

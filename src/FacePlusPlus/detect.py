@@ -1,96 +1,40 @@
-import urllib
-import urllib.request
-
+import requests
+import base64
 from src.utils import *
 
 class FaceDetect(object):
-    
-    def __init__(self,url,key,secret,boundary):
+
+    def __init__(self,url,key,secret):
         self.url = url
-        self.api_key = key
-        self.api_secret = secret
-        self.boundary = boundary
+        self.key = key
+        self.secret = secret
 
-    def http_append_image(self,image_type,image):
+    def gen_data(self,image_type,image,index=0):
+        return {image_type : image_encode(image_type,image)}
 
-        # todo
-
-        data = []
-        if image_type.find(PARAM_TYPE['url']) != -1:
-            param = image_type
-            data.append(string2byte('--%s' % self.boundary))
-            data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
-                                    param))
-            data.append(string2byte('Content-Type: %s\r\n' %
-                                    'application/octet-stream'))
-            data.append(image_encode(image_type, image))
-            return data
-
-        elif image_type.find(PARAM_TYPE['file']) != -1:
-            param = image_type
-            data.append(string2byte('--%s' % self.boundary))
-            data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
-                                    param))
-            data.append(string2byte('Content-Type: %s\r\n' %
-                                    'application/octet-stream'))
-            data.append(image_encode(image_type, image))
-            return data
-
-        elif image_type.find(PARAM_TYPE['base64']) != -1 :
-            param = image_type
-            data.append(string2byte('--%s' % self.boundary))
-            data.append(string2byte('Content-Disposition: form-data; name="%s"; filename=" "' %
-                                    param))
-            data.append(string2byte('Content-Type: %s\r\n' %
-                                    'application/octet-stream'))
-            data.append(image_encode(image_type, image))
-            return data
-
-        elif image_type.find(PARAM_TYPE['token']) != -1:
-            pass
-
-
-    def http_body(self,image_type,image):
-
-        data = []
-        # add api_key
-        data.append(string2byte('--%s' % self.boundary))
-        data.append(string2byte(
-            'Content-Disposition: form-data; name="%s"\r\n' % 'api_key'))
-        data.append(string2byte(self.api_key))
-
-
-        # add api_secret
-        data.append(string2byte('--%s' % self.boundary))
-        data.append(string2byte(
-            'Content-Disposition: form-data; name="%s"\r\n' % 'api_secret'))
-        data.append(string2byte(self.api_secret))
-
-        # detect single image
-        data = data + self.http_append_image(image_type[0],image[0])
-
-        data.append(string2byte('--%s--\r\n' % self.boundary))
-
-        return b'\r\n'.join(data)
-
+    def gen_files(self,image_type,image,index=0):
+        return {image_type : image_encode(image_type, image)}
 
     def detect(self,image_type,image):
-        qrcont = None   
 
-        req = urllib.request.Request(self.url)
-        req.add_header(
-            'Content-Type', 'multipart/form-data; boundary=%s' % self.boundary)
+        data = {
+            'api_key' : self.key ,
+            'api_secret' : self.secret,
+        }
+        files = {}
 
-        # req.add_header(
-        #     'Content-Type', 'application/octet-stream; boundary=%s' % self.boundary)
+        if image_type == PARAM_TYPE['file']:
+            files = {**files,**self.gen_files(image_type,image)}
 
-        data = self.http_body(image_type,image)
-        try:
-            resp = urllib.request.urlopen(req,data=data,timeout=5)
-            qrcont = resp.read().decode()
-            print (qrcont)
-        except urllib.error.HTTPError as e:
-            print (e.read())
+        elif image_type == PARAM_TYPE['base64']:
+            data = {**data, **self.gen_data(image_type,image)}
 
-        return qrcont
+        elif image_type == PARAM_TYPE['url']:
+            pass
 
+        try :
+            req = requests.post(self.url, data=data, files=files)
+            return req
+        except requests.HTTPError as e:
+            print (e)
+            return None
